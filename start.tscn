@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cix8qaxh2elxt"]
+[gd_scene load_steps=3 format=3 uid="uid://cix8qaxh2elxt"]
 
 [ext_resource type="Script" uid="uid://b3nl5ndiijjmo" path="res://main_menu.gd" id="1_ots34"]
+[ext_resource type="PackedScene" uid="uid://b6efq0mw4wrw4" path="res://scenes/hex_map.tscn" id="2_qn1rc"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -60,3 +61,8 @@ mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.62352943, 0.9372549, 0.9764706, 1)
 theme_override_colors/font_hover_color = Color(0.85882354, 0.90588236, 0.40784314, 1)
 text = "Desert"
+
+[node name="HexMap" parent="VBoxContainer" instance=ExtResource("2_qn1rc")]
+position = Vector2(-326.25, 295.25)
+map_size = null
+hex_size = 30.0
