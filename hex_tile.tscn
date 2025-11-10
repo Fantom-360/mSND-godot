@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://c6bm4dimxng7j"]
 
 [ext_resource type="Texture2D" uid="uid://7kroj5grg4rl" path="res://assests/plains_spr.png" id="1_2crfn"]
-[ext_resource type="Script" uid="uid://by60mv4b2a4lc" path="res://hex_tile.gd" id="1_pmlg5"]
+[ext_resource type="Script" uid="uid://cykknbxkw4kfv" path="res://node_2d.gd" id="2_pmlg5"]
 
 [sub_resource type="Shader" id="Shader_pmlg5"]
 code = "shader_type canvas_item;
@@ -34,13 +34,12 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5stwb"]
 shader = SubResource("Shader_pmlg5")
-shader_parameter/radius = 0.86
+shader_parameter/radius = 0.8
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_jjpf7"]
-points = PackedVector2Array(36.793114, 9.811562, 26.250883, -25.668877, -9.576305, -35.739254, -35.56837, -9.104455, -25.992064, 26.6348, 9.835125, 36.70518)
+points = PackedVector2Array(34.343624, 8.3973465, 25.284958, -25.410057, -9.058667, -33.807404, -34.602444, -9.363274, -25.284958, 25.410057, 9.058667, 33.807404)
 
 [node name="HexTile" type="Node2D"]
-script = ExtResource("1_pmlg5")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_5stwb")
@@ -48,5 +47,11 @@ scale = Vector2(1.176923, 1.176923)
 texture = ExtResource("1_2crfn")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3.8146973e-06)
 rotation = -1.3089969
 shape = SubResource("ConvexPolygonShape2D_jjpf7")
+
+[node name="Node2D" type="Node2D" parent="."]
+script = ExtResource("2_pmlg5")
+hex_size = 36.0
+border_thickness = 1.5

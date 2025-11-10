@@ -1,26 +1,33 @@
 shader_type canvas_item;
 
-uniform float radius = 0.5;
+// Color of the hex
+@uniform color color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
-void fragment() {
-	// Called for every pixel the material is visible on.
-	//convert UV from 0-1 to -1-1 range
-	vec2 uv = (UV - 0.5) * 2.0;
-	
-	//hex distance func
-	vec2 abs_uv = abs(uv);
-	float a = max(abs_uv.x * 0.866025 + abs_uv.y * 0.5, abs_uv.y);
-	
-	//discard pixels outrside the hex radius
-	if (a > radius) {
-		discard;
-	}
-	
-	COLOR = texture(TEXTURE, UV);
-	
+// Border color (black)
+@uniform color border_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+// Thickness of the inner border (try 0.05–0.1)
+@uniform float border_thickness = 0.05;
+
+// Function to calculate distance from hex center to edge
+float hex_distance(vec2 p) {
+    p = abs(p);
+    return max(dot(p, normalize(vec2(1.0, sqrt(3.0)))), p.x);
 }
 
-//void light() {
-//	// Called for every pixel for every light affecting the CanvasItem.
-//	// Uncomment to replace the default light processing function with this one.
-//}
+void fragment() {
+    // Center UV around (0,0) and scale
+    vec2 uv = (UV - vec2(0.5)) * 2.0;
+    float d = hex_distance(uv);
+
+    // Only draw inside the hex shape
+    if (d > 1.0) {
+        discard;
+    }
+
+    // Determine where the inner border starts
+    float t = smoothstep(1.0 - border_thickness, 1.0, d);
+
+    // Mix between border color and main color
+    COLOR = mix(border_color, color, t);
+}

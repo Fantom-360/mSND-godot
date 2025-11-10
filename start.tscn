@@ -60,9 +60,10 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.62352943, 0.9372549, 0.9764706, 1)
 theme_override_colors/font_hover_color = Color(0.85882354, 0.90588236, 0.40784314, 1)
-text = "Desert"
+text = "quit"
 
-[node name="HexMap" parent="VBoxContainer" instance=ExtResource("2_qn1rc")]
-position = Vector2(-326.25, 295.25)
-map_size = null
+[node name="HexMap" parent="." instance=ExtResource("2_qn1rc")]
+visible = false
+position = Vector2(243, 172)
+map_size = 2
 hex_size = 30.0
