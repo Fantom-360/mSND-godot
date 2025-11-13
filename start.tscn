@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://cix8qaxh2elxt"]
+[gd_scene load_steps=6 format=3 uid="uid://cix8qaxh2elxt"]
 
 [ext_resource type="Script" uid="uid://b3nl5ndiijjmo" path="res://main_menu.gd" id="1_ots34"]
-[ext_resource type="PackedScene" uid="uid://b6efq0mw4wrw4" path="res://scenes/hex_map.tscn" id="2_qn1rc"]
+[ext_resource type="Texture2D" uid="uid://b8yb3701lfwpc" path="res://assests/canvas.png" id="2_1n0d2"]
+[ext_resource type="PackedScene" uid="uid://b6efq0mw4wrw4" path="res://hex_map.tscn" id="2_qn1rc"]
+[ext_resource type="FontFile" uid="uid://ojj8a3a7lb75" path="res://fonts/IMFellEnglish-Regular.ttf" id="3_oiuna"]
+[ext_resource type="FontFile" uid="uid://cgl75bfh76ckk" path="res://fonts/IMFellEnglish-Italic.ttf" id="3_y5hus"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -16,14 +19,12 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ots34")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.73300546, 0.7330054, 0.7330054, 1)
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 5760.0
+offset_bottom = 3840.0
+scale = Vector2(0.1995863, 0.16817255)
+texture = ExtResource("2_1n0d2")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -33,9 +34,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -187.25
-offset_top = -180.25
+offset_top = -46.0
 offset_right = 187.25
-offset_bottom = 180.25
+offset_bottom = 89.25
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
@@ -46,6 +47,8 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.62352943, 0.9372549, 0.9764706, 1)
 theme_override_colors/font_hover_color = Color(0.85882354, 0.3529412, 0.40784314, 1)
+theme_override_fonts/font = ExtResource("3_oiuna")
+theme_override_font_sizes/font_size = 22
 text = "Venture into battle"
 
 [node name="Options_button" type="Button" parent="VBoxContainer"]
@@ -53,6 +56,8 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.62352943, 0.9372549, 0.9764706, 1)
 theme_override_colors/font_hover_color = Color(0.85882354, 0.3529412, 0.40784314, 1)
+theme_override_fonts/font = ExtResource("3_oiuna")
+theme_override_font_sizes/font_size = 22
 text = "Battle condicions"
 
 [node name="Quit_button" type="Button" parent="VBoxContainer"]
@@ -60,10 +65,46 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.62352943, 0.9372549, 0.9764706, 1)
 theme_override_colors/font_hover_color = Color(0.85882354, 0.90588236, 0.40784314, 1)
-text = "quit"
+theme_override_fonts/font = ExtResource("3_oiuna")
+theme_override_font_sizes/font_size = 22
+text = "Desert"
 
 [node name="HexMap" parent="." instance=ExtResource("2_qn1rc")]
 visible = false
 position = Vector2(243, 172)
 map_size = 2
 hex_size = 30.0
+
+[node name="Label" type="Label" parent="."]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 0
+offset_left = 336.0
+offset_top = 65.0
+offset_right = 847.0
+offset_bottom = 242.0
+theme_override_fonts/font = ExtResource("3_y5hus")
+theme_override_font_sizes/font_size = 68
+text = "Swords & Muskets New Dawn"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Main_name" type="Label" parent="."]
+modulate = Color(0.39232236, 0.577807, 0.8755279, 1)
+layout_mode = 0
+offset_left = 331.0
+offset_top = 67.0
+offset_right = 842.0
+offset_bottom = 244.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75686276)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 6
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_y5hus")
+theme_override_font_sizes/font_size = 68
+text = "Swords & Muskets New Dawn"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
