@@ -9,7 +9,10 @@ func _on_start_pressed():
 	print("You have ventured into battle Commander") #later add game scene
 
 func _on_options_pressed():
-	print("adjusting battle condicions Commander")
+	if $OptionLayer.get_child_count() == 0:
+		print("adjusting battle condicions Commander")
+		var options = load("res://UI_control_scenes/Options.tscn").instantiate()
+		$OptionLayer.add_child(options)
 
 func _on_quit_pressed():
 	get_tree().quit()

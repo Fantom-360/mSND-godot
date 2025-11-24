@@ -1,16 +1,85 @@
-[gd_scene format=3 uid="uid://8bsfbwwucuad"]
+[gd_scene load_steps=4 format=3 uid="uid://8bsfbwwucuad"]
+
+[ext_resource type="Script" uid="uid://v7x6ru82tx68" path="res://UI_control_scenes/UI_scripts/options.gd" id="1_rysse"]
+[ext_resource type="FontFile" uid="uid://ojj8a3a7lb75" path="res://fonts/IMFellEnglish-Regular.ttf" id="2_8cyoj"]
+[ext_resource type="Texture2D" uid="uid://b6n06iej24un" path="res://assests/Screenshot 2025-11-24 at 12-13-04 Image To Pixel Art.png" id="2_yq3sq"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+script = ExtResource("1_rysse")
 
-[node name="Label" type="Label" parent="."]
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+offset_top = 1.0
+offset_right = 478.0
+offset_bottom = 294.0
+
+[node name="TextureRect" type="TextureRect" parent="Panel"]
 layout_mode = 0
-offset_right = 502.0
-offset_bottom = 82.0
-theme_override_font_sizes/font_size = 35
-text = "Battle condicions"
+offset_right = 498.0
+offset_bottom = 332.0
+texture = ExtResource("2_yq3sq")
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -96.0
+offset_top = 14.0
+offset_right = 97.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_8cyoj")
+theme_override_font_sizes/font_size = 28
+text = "Battle Condicions"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CheckBox" type="CheckBox" parent="Panel"]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 76.0
+offset_right = 137.0
+offset_bottom = 107.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_8cyoj")
+theme_override_font_sizes/font_size = 19
+text = "Mute Music"
+
+[node name="HSlider" type="HSlider" parent="Panel"]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 112.0
+offset_right = 279.0
+offset_bottom = 132.5
+
+[node name="Label" type="Label" parent="Panel/HSlider"]
+layout_mode = 0
+offset_left = 267.0
+offset_top = -2.0
+offset_right = 326.0
+offset_bottom = 21.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_8cyoj")
+theme_override_font_sizes/font_size = 19
+text = "Volume"
+
+[node name="Button" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 284.0
+offset_right = 66.0
+offset_bottom = 322.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_8cyoj")
+theme_override_font_sizes/font_size = 23
+text = "Back"
+
+[connection signal="pressed" from="Panel/Button" to="." method="_on_button_pressed"]
