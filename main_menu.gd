@@ -7,6 +7,7 @@ func _ready():
 
 func _on_start_pressed():
 	print("You have ventured into battle Commander") #later add game scene
+	get_tree().change_scene_to_file("res://UI_control_scenes/campain_menu.tscn")
 
 func _on_options_pressed():
 	if $OptionLayer.get_child_count() == 0:
