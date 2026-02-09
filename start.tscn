@@ -123,7 +123,6 @@ autowrap_mode = 2
 
 [node name="OptionLayer" type="Control" parent="."]
 layout_mode = 1
-anchors_preset = 0
 offset_left = 331.0
 offset_top = 174.0
 offset_right = 372.0
