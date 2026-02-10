@@ -10,7 +10,38 @@ var selected_hex: Vector2i = Vector2i(-999, -999)
 var hovered_hex : Vector2i = Vector2i(-999, -999)
 var hex_centers := {} # Vector2i -> Vector
 var reachable_hexes: Array[Vector2i] = []
+const HEX_DIRECTIONS = [
+	Vector2i(1, 0),
+	Vector2i(1, -1),
+	Vector2i(0, -1),
+	Vector2i(-1, 0),
+	Vector2i(-1, 1),
+	Vector2i(0, 1),
+]
+var selected_unit = null
 
+func get_neighbors(hex: Vector2i) -> Array:
+	var result := []
+	for dir in HEX_DIRECTIONS:
+		var n = hex + dir
+		if logic.grid.has(n) and logic.grid[n]["walkable"]:
+			result.append(n)
+	return result
+
+func compute_reachable(unit):
+	reachable_hexes.clear()
+	reachable_hexes.append(unit.hex)
+
+	var frontier = [unit.hex]
+
+	for i in range(unit.move_points):
+		var new_frontier = []
+		for hex in frontier:
+			for n in get_neighbors(hex):
+				if not reachable_hexes.has(n):
+					reachable_hexes.append(n)
+					new_frontier.append(n)
+		frontier = new_frontier
 
 func get_col_width() -> float:
 	return hex_offset_x + hex_offset_x / 3
@@ -36,6 +67,13 @@ func _draw():
 			
 		draw_polygon(hex_points(center),PackedColorArray([color]))
 		draw_polyline(hex_points(center), railing_color, railing_magnitude)
+		
+	for hex in reachable_hexes:
+		var p = hex_to_pixel(hex)
+		draw_colored_polygon(
+			hex_points(p),
+			Color(0.3, 0.6, 1.0, 0.4)
+		)
 
 func hex_to_pixel(h: Vector2i) -> Vector2:
 	var x = start_pos.x + hex_offset_x * h.x + hex_offset_x/3 * h.x
@@ -121,4 +159,3 @@ func _input(event):
 			if hovered_hex != Vector2i(-999, -999):
 				hovered_hex = Vector2i(-999, -999)
 				queue_redraw()
-		

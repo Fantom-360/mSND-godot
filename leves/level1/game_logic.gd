@@ -97,10 +97,6 @@ func update_unit_pos():
 	for unit in units:
 		unit.move_to_hex(unit.hex)
 		
-func select_unit(unit):
-	selected_unit = unit
-	hex_overlay.reachable_hexes = get_neighbors(unit.hex)
-	hex_overlay.queue_redraw()
 
 func clear_selection():
 	selected_unit = null
@@ -108,7 +104,33 @@ func clear_selection():
 	hex_overlay.queue_redraw()
 	
 func on_hex_clicked(hex: Vector2i):
-	if grid[hex]["unit"] != null:
-		select_unit(grid[hex]["unit"])
-	else:
-		clear_selection()
+	var cell = grid[hex]
+
+	# Clicked on a unit → select it
+	if cell["unit"]:
+		select_unit(cell["unit"])
+		return
+
+	# Clicked empty hex while unit selected → move
+	if selected_unit:
+		try_move_unit(selected_unit, hex)
+
+func select_unit(unit):
+	selected_unit = unit
+	unit.selected = true
+	$HexOverlay.compute_reachable(unit)
+	$HexOverlay.queue_redraw()
+
+func try_move_unit(unit, target_hex):
+	if not $HexOverlay.reachable_hexes.has(target_hex):
+		return
+
+	grid[unit.hex]["unit"] = null
+	unit.hex = target_hex
+	grid[target_hex]["unit"] = unit
+	unit.move_to_hex(target_hex)
+
+	unit.selected = false
+	selected_unit = null
+	$HexOverlay.reachable_hexes.clear()
+	$HexOverlay.queue_redraw()
