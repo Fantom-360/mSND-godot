@@ -18,7 +18,9 @@ const NEIGHBORS_ODD = [
 	Vector2i(-1, +1), Vector2i(0, +1)
 ]
 
+# ------------------------ # 
 
+# -------- Running thingie and map generating and stuff ---------#
 func _ready() -> void:
 	generate_grid()
 	#if map_file_exists():
@@ -48,6 +50,8 @@ func generate_grid():
 				"unit": null
 			}
 
+# -------- Unit something random ------- #
+
 func register_unit(unit):
 	units.append(unit)
 	grid[unit.hex]["unit"] = unit
@@ -58,46 +62,10 @@ func spawn_unit(hex: Vector2i):
 	get_parent().get_node("Units").add_child(unit)
 	register_unit(unit)
 	
-func load_map():
-	grid.clear()
-
-	var file = FileAccess.open(MAP_PATH, FileAccess.READ)
-	var data = JSON.parse_string(file.get_as_text())
-	file.close()
-
-	for hex_data in data["hexes"]:
-		var h = Vector2i(hex_data["q"], hex_data["r"])
-		grid[h] = {
-			"q": h.x,
-			"r": h.y,
-			"walkable": hex_data["walkable"],
-			"unit": null
-		}
-
-func save_map():
-	var data := {}
-	data["hexes"] = []
-	
-	for h in grid.keys():
-		data["hexes"].append({
-			"q": h.x,
-			"r": h.y,
-			"walkable": grid[h]["walkable"]
-		})
-	DirAccess.make_dir_recursive_absolute("user://maps")
-	
-	var file = FileAccess.open(MAP_PATH, FileAccess.WRITE)
-	file.store_string(JSON.stringify(data))
-	file.close()
-	
-func map_file_exists():
-	return FileAccess.file_exists(MAP_PATH)
-	
 func update_unit_pos():
 	for unit in units:
 		unit.move_to_hex(unit.hex)
 		
-
 func clear_selection():
 	selected_unit = null
 	hex_overlay.reachable_hexes.clear()
@@ -134,3 +102,40 @@ func try_move_unit(unit, target_hex):
 	selected_unit = null
 	$HexOverlay.reachable_hexes.clear()
 	$HexOverlay.queue_redraw()
+
+#--- Map Load/ Safe ---#
+
+func load_map():
+	grid.clear()
+
+	var file = FileAccess.open(MAP_PATH, FileAccess.READ)
+	var data = JSON.parse_string(file.get_as_text())
+	file.close()
+
+	for hex_data in data["hexes"]:
+		var h = Vector2i(hex_data["q"], hex_data["r"])
+		grid[h] = {
+			"q": h.x,
+			"r": h.y,
+			"walkable": hex_data["walkable"],
+			"unit": null
+		}
+
+func save_map():
+	var data := {}
+	data["hexes"] = []
+	
+	for h in grid.keys():
+		data["hexes"].append({
+			"q": h.x,
+			"r": h.y,
+			"walkable": grid[h]["walkable"]
+		})
+	DirAccess.make_dir_recursive_absolute("user://maps")
+	
+	var file = FileAccess.open(MAP_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify(data))
+	file.close()
+	
+func map_file_exists():
+	return FileAccess.file_exists(MAP_PATH)
