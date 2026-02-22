@@ -18,7 +18,6 @@ const HEX_DIRECTIONS = [
 	Vector2i(-1, 1),
 	Vector2i(0, 1),
 ]
-var selected_unit = null
 
 # --- positioning equations ---#
 
