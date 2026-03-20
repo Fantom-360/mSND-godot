@@ -11,6 +11,7 @@ var hovered_hex : Vector2i = Vector2i(-999, -999)
 var hex_centers := {} # Vector2i -> Vector
 var reachable_hexes: Array[Vector2i] = []
 var highlighted = []
+var attack_highlighted = []
 const HEX_DIRECTIONS = [
 	Vector2i(1, 0),
 	Vector2i(1, -1),
@@ -95,6 +96,10 @@ func hex_distance(a: Vector2i, b: Vector2i) -> int:
 
 func highlight_hexes(list):
 	highlighted = list
+	queue_redraw()
+
+func set_attack_highlight(list):
+	attack_highlighted = list
 	queue_redraw()
 # --- Unit shit --- #
 
@@ -190,3 +195,7 @@ func _draw():
 	for hex in highlighted:
 		var pos = hex_to_pixel(hex)
 		draw_circle(pos, 20, Color(0,1,0,0.4))
+	
+	for hex in attack_highlighted:
+		var pos = hex_to_pixel(hex)
+		draw_circle(pos, 20, Color(1,0,0,0.5)) # red

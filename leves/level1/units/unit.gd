@@ -5,6 +5,7 @@ extends Node2D
 var hex_position : Vector2i
 var pixel_position : Vector2
 var max_mov: int = 3
+var move_points : int = 3
 var hp: int = 10
 var dmg: int = 3
 var unit_owner: String = "null"
@@ -15,6 +16,9 @@ func initialize(hex: Vector2i, pixel: Vector2):
 	hex_position = hex
 	pixel_position = pixel
 	position = pixel
+	
+	hp_bar.max_value = 10
+	hp_bar.value = hp
 
 func move_to_hex(hex: Vector2i, pixel: Vector2):
 	hex_position = hex
@@ -22,3 +26,6 @@ func move_to_hex(hex: Vector2i, pixel: Vector2):
 	
 func update_hp():
 	hp_bar.value = hp
+	
+	if hp <= 0:
+		queue_free()

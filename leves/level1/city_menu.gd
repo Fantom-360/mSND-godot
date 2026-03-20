@@ -7,8 +7,8 @@ func setup(hex, game_logic):
 	logic = game_logic
 
 func _on_spawn_unit_button_pressed() -> void:
-	logic.spawn_unit(city_hex)
-
+	logic.produce_unit(city_hex)
+	logic.update_ui()
 	queue_free()
 
 

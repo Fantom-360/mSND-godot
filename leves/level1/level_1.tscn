@@ -91,10 +91,10 @@ text = "load Game"
 
 [node name="GoldLabel" type="Label" parent="UI"]
 layout_mode = 0
-offset_left = 982.0
-offset_top = 596.0
-offset_right = 1077.0
-offset_bottom = 630.0
+offset_left = 985.0
+offset_top = 599.0
+offset_right = 1080.0
+offset_bottom = 633.0
 
 [connection signal="pressed" from="UI/CityButton" to="GameLogic" method="_on_city_button_pressed"]
 [connection signal="pressed" from="UI/Options" to="GameLogic" method="_on_options_pressed"]

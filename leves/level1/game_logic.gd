@@ -3,7 +3,10 @@ extends Node
 
 var grid := {}  # {Vector2i(q, r): true}
 
-const MAP_PATH := "user://maps/level1.json"
+var debug_mode = true
+
+const MAP_LOAD_PATH := "res://maps/level1.json"
+const MAP_SAVE_PATH := "user://maps/level1.json"
 @onready var hex_overlay := get_parent().get_node("HexOverlay")
 @onready var ui = get_parent().get_node("UI")
 @onready var city_button = ui.get_node("CityButton")
@@ -13,7 +16,10 @@ const MAP_PATH := "user://maps/level1.json"
 @export var city_menu_scene : PackedScene
 @export var options_menu : PackedScene
 var units = []
-var reachable_hexes = []
+var attackable_hexes = []
+var attack_highlighted = []
+var reachable_costs = {}  # hex -> cost
+var came_from = {}  # hex -> previous hex
 var selected_unit = null
 var selected_city_hex : Vector2i
 var player_gold = 10
@@ -49,69 +55,157 @@ func spawn_unit(hex: Vector2i):
 	grid[hex]["unit"] = unit
 
 func select_unit(unit):
-	
 	selected_unit = unit
 	show_movement_range(unit)
+	show_attack_range(unit)
+
+func build_path(to_hex):
+
+	var path = []
+	var current = to_hex
+
+	while current != null:
+		path.push_front(current)
+		current = came_from[current]
+
+	return path
 
 func show_movement_range(unit):
 
-	reachable_hexes.clear()
+	reachable_costs.clear()
+	came_from.clear()
 
-	for hex in grid.keys():
+	var frontier = [unit.hex_position]
 
-		var dist = hex_overlay.hex_distance(unit.hex_position, hex)
+	reachable_costs[unit.hex_position] = 0
+	came_from[unit.hex_position] = null
 
-		if dist <= unit.max_mov:
-			reachable_hexes.append(hex)
+	while frontier.size() > 0:
+		var current = frontier.pop_front()
 
-	hex_overlay.highlight_hexes(reachable_hexes)
+		for n in get_neighbors(current):
+
+			if grid[n]["unit"] != null:
+				continue
+
+			var new_cost = reachable_costs[current] + 1
+
+			if new_cost > unit.move_points:
+				continue
+
+			if not reachable_costs.has(n):
+				reachable_costs[n] = new_cost
+				came_from[n] = current
+				frontier.append(n)
+
+	hex_overlay.highlight_hexes(reachable_costs.keys())
+
+func show_attack_range(unit):
+
+	attackable_hexes.clear()
+
+	for n in get_neighbors(unit.hex_position):
+
+		var u = grid[n]["unit"]
+
+		if u != null and u.unit_owner != unit.unit_owner:
+			attackable_hexes.append(n)
+
+	hex_overlay.set_attack_highlight(attackable_hexes)
 
 func on_hex_clicked(hex: Vector2i):
 
 	if not grid.has(hex):
 		return
 
-	# --- click on unit ---
-	if grid[hex]["unit"] != null:
-		hide_city_button()
-		select_unit(grid[hex]["unit"])
+	var clicked_unit = grid[hex]["unit"]
+
+	# -------------------------
+	# 1. CLICKED A UNIT
+	# -------------------------
+	if clicked_unit != null:
+
+		# 🟥 enemy clicked
+		if clicked_unit.unit_owner != "player":
+
+			if selected_unit != null:
+
+				# ONLY allow attack if in attack range
+				if attackable_hexes.has(hex):
+
+					attack_unit(selected_unit, clicked_unit)
+
+					selected_unit.has_attacked = true
+					selected_unit.has_moved = true
+
+					selected_unit = null
+					hex_overlay.highlight_hexes([])
+					hex_overlay.set_attack_highlight([])
+
+			return
+
+		# 🟦 player unit clicked
+		if clicked_unit.unit_owner == "player":
+
+			# prevent reusing moved unit
+			if clicked_unit.has_moved:
+				return
+
+			select_unit(clicked_unit)
+			return
+
+	# -------------------------
+	# 2. MOVE
+	# -------------------------
+	if selected_unit != null:
+
+		# already used turn
+		if selected_unit.has_moved:
+			return
+
+		# clicked same tile → deselect
+		if hex == selected_unit.hex_position:
+			selected_unit = null
+			hex_overlay.highlight_hexes([])
+			return
+
+		# not reachable → deselect
+		if not reachable_costs.has(hex):
+			selected_unit = null
+			hex_overlay.highlight_hexes([])
+			return
+
+		var path = build_path(hex)
+		path.pop_front()  # remove current tile
+
+		for step in path:
+
+			grid[selected_unit.hex_position]["unit"] = null
+			grid[step]["unit"] = selected_unit
+
+			selected_unit.hex_position = step
+			selected_unit.position = hex_overlay.hex_to_pixel(step)
+
+			selected_unit.move_points -= 1
+
+		# capture city
+		if grid[hex]["city"]:
+			grid[hex]["owner"] = selected_unit.unit_owner
+
+		# 🔒 lock unit after move
+		selected_unit.has_moved = true
+		selected_unit = null
+		hex_overlay.highlight_hexes([])
+
 		return
 
-	# --- move selected unit first ---
-	if selected_unit != null:
-		
-		# deselect if outside movement range
-		if not reachable_hexes.has(hex):
-			selected_unit = null
-			hex_overlay.highlight_hexes([])
-			return
-		
-		# move unit
-		if grid[hex]["unit"] == null:
-			
-			if grid[hex]["city"]:
-				grid[hex]["city_owner"] = selected_unit.owner
-				hex_overlay.queue_redraw()
-			
-			var old_hex = selected_unit.hex_position
-
-			grid[old_hex]["unit"] = null
-			grid[hex]["unit"] = selected_unit
-
-			selected_unit.hex_position = hex
-			selected_unit.position = hex_overlay.hex_to_pixel(hex)
-
-			selected_unit = null
-			hex_overlay.highlight_hexes([])
-
-			return
-
-	# --- city interaction AFTER movement ---
+	# -------------------------
+	# 3. CITY INTERACTION
+	# -------------------------
 	if grid[hex]["city"]:
 		show_city_button(hex)
-		return
-
-	hide_city_button()
+	else:
+		hide_city_button()
 
 func get_step_toward(start_hex: Vector2i, target_hex: Vector2i):
 
@@ -141,9 +235,10 @@ func _ready() -> void:
 	else:
 		generate_grid()
 		save_map()
-
+	update_ui()
 	city_button.visible = false
 	hex_overlay.queue_redraw()
+	spawn_enemy_unit(Vector2i(11, 5))
 
 func get_neighbors(h: Vector2i) -> Array:
 	var dirs = NEIGHBORS_ODD if h.x % 2 == 1 else NEIGHBORS_EVEN
@@ -174,7 +269,7 @@ func generate_grid():
 func load_map():
 	grid.clear()
 
-	var file = FileAccess.open(MAP_PATH, FileAccess.READ)
+	var file = FileAccess.open(MAP_LOAD_PATH, FileAccess.READ)
 	var data = JSON.parse_string(file.get_as_text())
 	file.close()
 
@@ -186,11 +281,13 @@ func load_map():
 			"walkable": hex_data["walkable"],
 			"unit": null,
 			"city": hex_data["city"],
-			"terrain": null,
-			"owner":null
+			"terrain": hex_data["terrain"],
+			"owner": hex_data["owner"]
 		}
+
 func _on_load_button_pressed() -> void:
 	load_game()
+	
 func save_map():
 	var data := {}
 	data["hexes"] = []
@@ -202,20 +299,21 @@ func save_map():
 			"walkable": grid[h]["walkable"],
 			"unit": null,
 			"city": grid[h]["city"],
-			"terrain": null,
-			"owner": null
+			"terrain": grid[h]["terrain"],
+			"owner": grid[h]["owner"]
 		})
-	DirAccess.make_dir_recursive_absolute("user://maps")
+	DirAccess.make_dir_recursive_absolute(MAP_SAVE_PATH)
 	
-	var file = FileAccess.open(MAP_PATH, FileAccess.WRITE)
+	var file = FileAccess.open(MAP_SAVE_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify(data))
 	file.close()
 func _on_save_button_pressed() -> void:
 	save_game()
 func map_file_exists():
-	return FileAccess.file_exists(MAP_PATH)
+	return FileAccess.file_exists(MAP_LOAD_PATH)
 
 #--- GAME Load/ save ---#
+
 func save_game():
 
 	var data = {}
@@ -247,7 +345,7 @@ func save_game():
 	var file = FileAccess.open("user://savegame.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(data))
 	file.close()
-	
+
 func load_game():
 
 	if not FileAccess.file_exists("user://savegame.json"):
@@ -314,6 +412,7 @@ func _on_options_pressed() -> void:
 		options_layer.add_child(options)
 
 #--- TURN SYSTEM BLIAT ---#
+
 enum Turn {PLAYER, ENEMY}
 var current_turn = Turn.PLAYER
 var turn_order = []  # All units in the turn, can be filtered by owner
@@ -321,7 +420,6 @@ var turn_index = 0
 
 func start_turn(turn_type):
 	current_turn = turn_type
-	
 	process_income()
 	update_ui()
 	check_victory()
@@ -335,6 +433,7 @@ func start_turn(turn_type):
 	for unit in turn_order:
 		unit.has_moved = false
 		unit.has_attacked = false
+		unit.move_points = unit.max_mov
 
 func _on_turn_button_pressed() -> void:
 	if current_turn == Turn.PLAYER:
@@ -344,6 +443,8 @@ func _on_turn_button_pressed() -> void:
 		start_turn(Turn.PLAYER)
 		
 func do_enemy_turn():
+	
+	enemy_spawn_logic()
 	
 	for unit in turn_order:
 
@@ -454,6 +555,36 @@ func spawn_enemy_unit(hex: Vector2i):
 
 	grid[hex]["unit"] = unit
 
+func enemy_spawn_logic():
+
+	for h in grid.keys():
+
+		if not grid[h]["city"]:
+			continue
+
+		if grid[h]["owner"] != "enemy":
+			continue
+
+		# check if player unit is nearby
+		var danger = false
+
+		for n in get_neighbors(h):
+			var u = grid[n]["unit"]
+			if u != null and u.unit_owner == "player":
+				danger = true
+				break
+
+		if not danger:
+			continue
+
+		# check gold
+		if enemy_gold < 10:
+			continue
+
+		# spawn if free
+		if grid[h]["unit"] == null:
+			spawn_enemy_unit(h)
+			enemy_gold -= 10
 #--- Faztorio ---#
 func produce_unit(hex):
 

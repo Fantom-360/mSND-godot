@@ -20,11 +20,11 @@ offset_bottom = 568.0
 
 [node name="Spawn unit button" type="Button" parent="."]
 layout_mode = 0
-offset_left = 498.0
-offset_top = 280.0
-offset_right = 678.0
-offset_bottom = 329.0
-text = "spawn unit"
+offset_left = 183.0
+offset_top = 85.0
+offset_right = 363.0
+offset_bottom = 134.0
+text = "spawn unit - cost: 10g"
 
 [node name="Cancle_button" type="Button" parent="."]
 layout_mode = 0
