@@ -14,3 +14,9 @@ func _on_spawn_unit_button_pressed() -> void:
 
 func _on_cancle_button_pressed() -> void:
 	queue_free()
+
+
+func _on_swn_artillery_pressed() -> void:
+	logic.produce_artillery(city_hex)
+	logic.update_ui()
+	queue_free()
