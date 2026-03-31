@@ -1,3 +1,4 @@
+class_name Infantry
 extends Node2D
 #unit script
 @onready var hp_bar = $ProgressBar
@@ -13,6 +14,7 @@ var unit_owner: String = "null"
 var has_moved = false
 var has_attacked = false
 var attack_range: int = 1
+var ignores_terrain: bool = false
 
 var texture_player = preload("res://assests/player_infantrie.png")
 var texture_enemy  = preload("res://assests/enemy_infantrie.png")

@@ -1,8 +1,8 @@
+class_name Artillery
 extends Node2D
 
 @onready var hp_bar = $ProgressBar
 @onready var sprite = $Sprite2D
-
 var hex_position : Vector2i
 var pixel_position : Vector2
 var max_mov: int = 1       # slow
@@ -13,6 +13,7 @@ var unit_owner: String = "null"
 var has_moved = false
 var has_attacked = false
 var attack_range: int = 2
+var ignores_terrain: bool =true
 
 var texture_player = preload("res://assests/cannon_player.png")
 var texture_enemy  = preload("res://assests/cannon_enemy.png")

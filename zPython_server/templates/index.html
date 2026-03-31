@@ -279,6 +279,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:2.
     <li><a href="#about">About</a></li>
     <li><a href="#mechanics">Mechanics</a></li>
     <li><a href="#leaderboard">Leaderboard</a></li>
+    <li><a href="#docs">Docs</a></li>
   </ul>
   <div class="nav-btns">
     <div id="nav-auth">
@@ -389,6 +390,34 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:2.
       <button class="btn-sm" onclick="closeStats()">✕ Close</button>
     </div>
     <div id="stats-body"></div>
+  </div>
+</div>
+
+<div class="divider">✦</div>
+
+<!-- ══ DOCS ══════════════════════════════════════ -->
+<div class="sec" id="docs">
+  <div class="sec-hd">
+    <div class="sec-eye">Under The Hood</div>
+    <div class="sec-title">Game Logic Diagrams</div>
+    <div class="sec-rule">⚔</div>
+  </div>
+  <p style="text-align:center;color:var(--parch2);font-style:italic;opacity:.8;margin-bottom:2.5rem;max-width:600px;margin-left:auto;margin-right:auto;">
+    Flowcharts documenting the core mechanics of Muskets &amp; Swords — how clicks, turns and enemy AI are processed under the hood.
+  </p>
+  <div class="about-grid" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="acard" style="text-align:center;">
+      <h3>Hex Click Logic</h3>
+      <img src="/static/diagrams/Diagram_on_hex_clicked.png" style="width:100%;border-radius:4px;margin-top:.75rem;border:1px solid var(--border);"/>
+    </div>
+    <div class="acard" style="text-align:center;">
+      <h3>Turn Button Logic</h3>
+      <img src="/static/diagrams/on_turn_button_pressed.png" style="width:100%;border-radius:4px;margin-top:.75rem;border:1px solid var(--border);"/>
+    </div>
+    <div class="acard" style="text-align:center;">
+      <h3>Enemy AI Logic</h3>
+      <img src="/static/diagrams/do_enemy_turn.png" style="width:100%;border-radius:4px;margin-top:.75rem;border:1px solid var(--border);"/>
+    </div>
   </div>
 </div>
 

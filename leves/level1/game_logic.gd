@@ -101,7 +101,9 @@ func show_movement_range(unit):
 				continue
 
 			var terrain = grid[n]["terrain"]
-			var move_cost = TERRAIN_COST.get(terrain, 1)
+			var move_cost = 1
+			if not unit.ignores_terrain:
+				move_cost = TERRAIN_COST.get(terrain, 1)
 
 			var new_cost = reachable_costs[current] + move_cost
 
@@ -210,7 +212,9 @@ func on_hex_clicked(hex: Vector2i):
 		# capture city
 		if grid[hex]["city"]:
 			grid[hex]["owner"] = selected_unit.unit_owner
-
+			check_victory()  # ← add this!
+			hex_overlay.queue_redraw()
+			
 		# 🔒 lock unit after move
 		selected_unit.has_moved = true
 
@@ -231,28 +235,32 @@ func on_hex_clicked(hex: Vector2i):
 	# -------------------------
 	# 3. CITY INTERACTION
 	# -------------------------
-	if grid[hex]["city"]:
+	if grid[hex]["city"] and grid[hex]["owner"] == "player":
 		show_city_button(hex)
 	else:
 		hide_city_button()
 
-func get_step_toward(start_hex: Vector2i, target_hex: Vector2i):
+func get_step_toward(start_hex: Vector2i, target_hex: Vector2i, unit) -> Vector2i:
 
 	var neighbors = get_neighbors(start_hex)
-
 	var best_hex = start_hex
-	var best_dist = 999999
+	var best_score = 999999
 
 	for n in neighbors:
-
-		# don't walk into other units
 		if grid[n]["unit"] != null:
 			continue
+		if grid[n]["terrain"] == "water":
+			continue
 
-		var d = hex_overlay.hex_distance(n, target_hex)
+		var terrain_cost = 1
+		if not unit.ignores_terrain:
+			terrain_cost = TERRAIN_COST.get(grid[n]["terrain"], 1)
 
-		if d < best_dist:
-			best_dist = d
+		var dist = hex_overlay.hex_distance(n, target_hex)
+		var score = dist + terrain_cost  # prefer closer AND cheaper terrain
+
+		if score < best_score:
+			best_score = score
 			best_hex = n
 
 	return best_hex
@@ -522,15 +530,18 @@ func do_enemy_turn():
 			continue
 
 		# 🔴 check neighbors for player
-		for n in get_neighbors(unit.hex_position):
+		var found_target = false
+		for n in get_hexes_in_range(unit.hex_position, unit.attack_range):
 			var target = grid[n]["unit"]
 
 			if target != null and target.unit_owner == "player":
 				attack_unit(unit, target)
 				unit.has_moved = true
+				unit.has_attacked = true
+				found_target = true
 				break
 
-		if unit.has_moved:
+		if found_target:
 			continue
 
 		# 🟡 otherwise move
@@ -543,7 +554,7 @@ func do_enemy_turn():
 
 		for i in range(steps):
 
-			var step = get_step_toward(unit.hex_position, target)
+			var step = get_step_toward(unit.hex_position, target, unit)
 
 			# can't move further
 			if step == unit.hex_position:
@@ -622,7 +633,9 @@ func move_unit_to(unit, target_hex):
 	# capture city
 	if grid[target_hex]["city"]:
 		grid[target_hex]["owner"] = unit.unit_owner
-
+		check_victory()  # ← add this!
+		hex_overlay.queue_redraw()
+		
 	# update position visually
 	unit.position = hex_overlay.hex_to_pixel(target_hex)
 
@@ -814,7 +827,8 @@ func send_save_to_server():
 			"q": unit.hex_position.x,
 			"r": unit.hex_position.y,
 			"owner": unit.unit_owner,
-			"hp": unit.hp
+			"hp": unit.hp,
+			"type": "artillery" if unit.get_script().get_path().contains("artillery") else "infantry"
 		})
 
 	# save cities
@@ -875,7 +889,6 @@ func load_from_dict(data):
 	# clear units
 	for h in grid.keys():
 		grid[h]["unit"] = null
-
 	for unit in units:
 		unit.queue_free()
 	units.clear()
@@ -883,16 +896,19 @@ func load_from_dict(data):
 	# recreate units
 	for u in data["units"]:
 		var hex = Vector2i(u["q"], u["r"])
+		var unit
 
-		var unit = unit_scene.instantiate()
+		# pick the right scene based on saved type
+		if u.get("type", "infantry") == "artillery":
+			unit = artillery_scene.instantiate()
+		else:
+			unit = unit_scene.instantiate()
+
 		add_child(unit)
-
-		unit.initialize(hex, Vector2(40,40))
-		unit.unit_owner = u["owner"]
+		unit.unit_owner = u["owner"]   # ← BEFORE initialize!
+		unit.initialize(hex, Vector2(40, 40))
 		unit.hp = int(u["hp"])
-
 		unit.position = hex_overlay.hex_to_pixel(hex)
-
 		grid[hex]["unit"] = unit
 		units.append(unit)
 
@@ -902,6 +918,7 @@ func load_from_dict(data):
 		grid[h]["owner"] = c["owner"]
 
 	update_ui()
+	hex_overlay.queue_redraw()
 
 func unlock_next_level():
 	var new_highest = min(global.current_level + 1, 3)
@@ -942,7 +959,13 @@ func send_completion_to_server():
 
 func level_preset_units(level_num):
 	if level_num == 1:
-		spawn_enemy_unit(Vector2i(11, 5))
+		spawn_artillery(Vector2(3, 3))
+		spawn_enemy_artillery(Vector2(11, 1))
+		spawn_enemy_unit(Vector2(12, 0))
+		spawn_enemy_unit(Vector2(11, 5))
+		spawn_unit(Vector2(1, 0))
+		spawn_enemy_artillery(Vector2(13, 4))
+		spawn_unit(Vector2(0, 5))
 		
 
 func produce_artillery(hex):
@@ -960,6 +983,21 @@ func spawn_artillery(hex: Vector2i):
 	add_child(unit)
 
 	unit.unit_owner = "player"   # ← before initialize!
+	unit.initialize(hex, Vector2(40, 40))
+	unit.position = hex_overlay.hex_to_pixel(hex)
+
+	unit.has_moved = true
+	unit.has_attacked = true
+	unit.move_points = 0
+
+	units.append(unit)
+	grid[hex]["unit"] = unit
+
+func spawn_enemy_artillery(hex: Vector2i):
+	var unit = artillery_scene.instantiate()
+	add_child(unit)
+
+	unit.unit_owner = "enemy"
 	unit.initialize(hex, Vector2(40, 40))
 	unit.position = hex_overlay.hex_to_pixel(hex)
 
